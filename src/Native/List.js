@@ -141,37 +141,6 @@ Elm.Native.List.make = function(localRuntime) {
         }));
     }
 
-    function take(n, xs) {
-        var arr = [];
-        while (xs.ctor !== '[]' && n > 0) {
-            arr.push(xs._0);
-            xs = xs._1;
-            --n;
-        }
-        return fromArray(arr);
-    }
-
-    function drop(n, xs) {
-        while (xs.ctor !== '[]' && n > 0) {
-            xs = xs._1;
-            --n;
-        }
-        return xs;
-    }
-
-    function repeat(n, x) {
-        var arr = [];
-        var pattern = [x];
-        while (n > 0) {
-            if (n & 1)
-            {
-                arr = arr.concat(pattern);
-            }
-            n >>= 1, pattern = pattern.concat(pattern);
-        }
-        return fromArray(arr);
-    }
-
 
     Elm.Native.List.values = {
         Nil:Nil,
@@ -191,9 +160,6 @@ Elm.Native.List.make = function(localRuntime) {
         map5:F6(map5),
         sortBy:F2(sortBy),
         sortWith:F2(sortWith),
-        take:F2(take),
-        drop:F2(drop),
-        repeat:F2(repeat)
     };
     return localRuntime.Native.List.values = Elm.Native.List.values;
 

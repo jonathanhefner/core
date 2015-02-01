@@ -360,21 +360,36 @@ intersperse sep xs =
     take 2 [1,2,3,4] == [1,2]
 -}
 take : Int -> List a -> List a
-take = Native.List.take
+take n xs =
+  let take1 _ acc =
+        case acc of
+          (_, []) -> acc
+          (taken, x::rest) -> (x::taken, rest)
+  in
+      foldn take1 ([], xs) n |> fst |> reverse
 
 {-| Drop the first *n* members of a list.
 
     drop 2 [1,2,3,4] == [3,4]
 -}
 drop : Int -> List a -> List a
-drop = Native.List.drop
+drop n xs =
+  let drop1 _ acc =
+        case acc of
+          [] -> []
+          _::rest -> rest
+  in
+      foldn drop1 xs n
 
 {-| Create a list with *n* copies of a value:
 
     repeat 3 (0,0) == [(0,0),(0,0),(0,0)]
 -}
 repeat : Int -> a -> List a
-repeat = Native.List.repeat
+repeat n x =
+  let cons1 _ acc = x::acc
+  in
+      foldn cons1 [] n
 
 {-| Sort values from lowest to highest
 
