@@ -220,7 +220,13 @@ all pred xs =
     any isEven [] == False
 -}
 any : (a -> Bool) -> List a -> Bool
-any = Native.List.any
+any pred xs =
+  let sentinel x _ =
+        if pred x
+          then Done True
+          else Continue False
+  in
+      foldlWhile sentinel False xs
 
 
 {-| Put two lists together.
@@ -367,21 +373,37 @@ intersperse sep xs =
     take 2 [1,2,3,4] == [1,2]
 -}
 take : Int -> List a -> List a
-take = Native.List.take
+take n xs =
+  let take1 x acc =
+        case acc of
+          (0, _) -> Done acc
+          (c, taken) -> Continue (c - 1, x::taken)
+  in
+      case (foldlWhile take1 (n, []) xs) of
+        (0, taken) -> reverse taken
+        _ -> xs
 
 {-| Drop the first *n* members of a list.
 
     drop 2 [1,2,3,4] == [3,4]
 -}
 drop : Int -> List a -> List a
-drop = Native.List.drop
+drop n xs =
+  let drop1 _ acc =
+        case acc of
+          (0, _) -> Done acc
+          (_, []) -> Done acc
+          (c, _::rest) -> Continue (c - 1, rest)
+  in
+      foldlWhile drop1 (n, xs) xs |> snd
 
 {-| Create a list with *n* copies of a value:
 
     repeat 3 (0,0) == [(0,0),(0,0),(0,0)]
 -}
 repeat : Int -> a -> List a
-repeat = Native.List.repeat
+repeat n x =
+  foldl (\_ acc -> x::acc) [] [1..n] 
 
 {-| Sort values from lowest to highest
 
