@@ -10,6 +10,14 @@ Elm.Native.Basics.make = function(localRuntime) {
 
     var Utils = Elm.Native.Utils.make(localRuntime);
 
+    function loopUntil(condition, initialState, updater){
+        var tempState = initialState;
+        while (condition(tempState) === false){
+            tempState = updater(tempState);
+        }
+        return tempState;
+    }
+    
     function div(a, b) {
         return (a/b)|0;
     }
@@ -77,6 +85,8 @@ Elm.Native.Basics.make = function(localRuntime) {
     }
 
     return localRuntime.Native.Basics.values = {
+        loopUntil: F3(loopUntil),
+      
         div: F2(div),
         rem: F2(rem),
         mod: F2(mod),

@@ -11,6 +11,7 @@ module Basics
     , toString, (++)
     , fst, snd
     , identity, always, (<|), (|>), (<<), (>>), flip, curry, uncurry
+    , loopUntil
     ) where
 
 {-| Tons of useful functions that get imported by default.
@@ -470,3 +471,6 @@ This combines two arguments into a single pair.
 -}
 uncurry : (a -> b -> c) -> (a,b) -> c
 uncurry f (a,b) = f a b
+
+loopUntil : (state -> Bool) -> state -> (state -> state) -> state
+loopUntil = Native.Basics.loopUntil
