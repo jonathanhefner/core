@@ -62,6 +62,15 @@ Elm.Native.List.make = function(localRuntime) {
         return acc;
     }
     
+    function foldlWhile(f, b, xs) {
+        var acc = { ctor: 'Continue', _0: b };
+        while (xs.ctor !== '[]' && acc.ctor !== 'Done') {
+            acc = A2(f, xs._0, acc._0);
+            xs = xs._1;
+        }
+        return acc._0;
+    }
+    
     function any(pred, xs) {
         while (xs.ctor !== '[]') {
             if (pred(xs._0))
@@ -183,6 +192,7 @@ Elm.Native.List.make = function(localRuntime) {
 
         foldl:F3(foldl),
         foldr:F3(foldr),
+        foldlWhile: F3(foldlWhile),
 
         any:F2(any),
         map2:F3(map2),

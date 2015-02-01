@@ -138,6 +138,13 @@ foldl = Native.List.foldl
 foldr : (a -> b -> b) -> b -> List a -> b
 foldr = Native.List.foldr
 
+
+type Sentinel a = Continue a | Done a
+
+foldlWhile : (a -> b -> Sentinel b) -> b -> List a -> b
+foldlWhile = Native.List.foldlWhile
+
+
 {-| Reduce a list from the left, building up all of the intermediate results into a list.
 
     scanl (+) 0 [1,2,3,4] == [0,1,3,6,10]
