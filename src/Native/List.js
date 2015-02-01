@@ -61,17 +61,6 @@ Elm.Native.List.make = function(localRuntime) {
         }
         return acc;
     }
-    
-    function any(pred, xs) {
-        while (xs.ctor !== '[]') {
-            if (pred(xs._0))
-            {
-                return true;
-            }
-            xs = xs._1;
-        }
-        return false;
-    }
 
     function map2(f, xs, ys) {
         var arr = [];
@@ -141,37 +130,6 @@ Elm.Native.List.make = function(localRuntime) {
         }));
     }
 
-    function take(n, xs) {
-        var arr = [];
-        while (xs.ctor !== '[]' && n > 0) {
-            arr.push(xs._0);
-            xs = xs._1;
-            --n;
-        }
-        return fromArray(arr);
-    }
-
-    function drop(n, xs) {
-        while (xs.ctor !== '[]' && n > 0) {
-            xs = xs._1;
-            --n;
-        }
-        return xs;
-    }
-
-    function repeat(n, x) {
-        var arr = [];
-        var pattern = [x];
-        while (n > 0) {
-            if (n & 1)
-            {
-                arr = arr.concat(pattern);
-            }
-            n >>= 1, pattern = pattern.concat(pattern);
-        }
-        return fromArray(arr);
-    }
-
 
     Elm.Native.List.values = {
         Nil:Nil,
@@ -184,16 +142,12 @@ Elm.Native.List.make = function(localRuntime) {
         foldl:F3(foldl),
         foldr:F3(foldr),
 
-        any:F2(any),
         map2:F3(map2),
         map3:F4(map3),
         map4:F5(map4),
         map5:F6(map5),
         sortBy:F2(sortBy),
         sortWith:F2(sortWith),
-        take:F2(take),
-        drop:F2(drop),
-        repeat:F2(repeat)
     };
     return localRuntime.Native.List.values = Elm.Native.List.values;
 

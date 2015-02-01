@@ -213,7 +213,19 @@ all pred xs =
     any isEven [] == False
 -}
 any : (a -> Bool) -> List a -> Bool
-any = Native.List.any
+any pred xs =
+  let sentinel s =
+        case s of
+          Nothing -> True
+          Just (x, _) -> pred x
+      step s =
+        case s of
+          Nothing -> Nothing
+          Just (x, rest) -> uncons rest
+  in
+      case (loopUntil sentinel (uncons xs) step) of
+        Nothing -> False
+        Just _ -> True
 
 
 {-| Put two lists together.
@@ -360,21 +372,57 @@ intersperse sep xs =
     take 2 [1,2,3,4] == [1,2]
 -}
 take : Int -> List a -> List a
-take = Native.List.take
+take n xs =
+  let sentinel s =
+        case s of
+          (0, _, _) -> True
+          (_, _, []) -> True
+          _ -> False
+      step s =
+        case s of
+          (0, _, _) -> s
+          (_, _, []) -> s
+          (c, taken, x::rest) -> (c - 1, x::taken, rest)
+  in
+      case (loopUntil sentinel (n, [], xs) step) of
+        (_, _, []) -> xs
+        (_, taken, _) -> reverse taken
 
 {-| Drop the first *n* members of a list.
 
     drop 2 [1,2,3,4] == [3,4]
 -}
 drop : Int -> List a -> List a
-drop = Native.List.drop
+drop n xs =
+  let sentinel s =
+        case s of
+          (0, _) -> True
+          (_, []) -> True
+          _ -> False
+      step s =
+        case s of
+          (0, _) -> s
+          (_, []) -> s
+          (c, _::rest) -> (c - 1, rest)
+  in
+      loopUntil sentinel (n, xs) step |> snd
 
 {-| Create a list with *n* copies of a value:
 
     repeat 3 (0,0) == [(0,0),(0,0),(0,0)]
 -}
 repeat : Int -> a -> List a
-repeat = Native.List.repeat
+repeat n x =
+  let sentinel s =
+        case s of
+          (0, _) -> True
+          _ -> False
+      step s =
+        case s of
+          (0, xs) -> (0, xs)
+          (c, xs) -> (c - 1, x::xs)
+  in
+      loopUntil sentinel (n, []) step |> snd
 
 {-| Sort values from lowest to highest
 
