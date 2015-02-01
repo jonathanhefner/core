@@ -10,6 +10,14 @@ Elm.Native.Basics.make = function(localRuntime) {
 
     var Utils = Elm.Native.Utils.make(localRuntime);
 
+    function foldn(f, b, n) {
+        var acc = b;
+        for (var i = 0; i < n; i++) {
+            acc = A2(f, i, acc);
+        }
+        return acc;
+    }
+    
     function div(a, b) {
         return (a/b)|0;
     }
@@ -77,6 +85,8 @@ Elm.Native.Basics.make = function(localRuntime) {
     }
 
     return localRuntime.Native.Basics.values = {
+        foldn: F3(foldn),
+      
         div: F2(div),
         rem: F2(rem),
         mod: F2(mod),
