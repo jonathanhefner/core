@@ -19,6 +19,7 @@ import Test.CodeGen as CodeGen
 import Test.Dict as Dict
 import Test.Equality as Equality
 import Test.List as List
+import Test.Generator as Generator
 import Test.Result as Result
 import Test.Set as Set
 import Test.String as String
@@ -35,6 +36,7 @@ tests =
     , CodeGen.tests
     , Dict.tests
     , Equality.tests
+    , Generator.tests
     , List.tests
     , Result.tests
     , Set.tests
