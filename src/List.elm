@@ -50,6 +50,7 @@ The current sentiment is that it is already quite error prone once you get to
 import Basics (..)
 import Maybe
 import Maybe ( Maybe(Just,Nothing) )
+import Generator
 import Native.List
 
 
@@ -113,7 +114,7 @@ member x xs =
 -}
 map : (a -> b) -> List a -> List b
 map f xs =
-  foldr (\x acc -> (f x) :: acc) [] xs
+  Generator.fromList xs |> Generator.map f |> Generator.toList
 
 {-| Same as `map` but the function is also applied to the index of each
 element (starting at zero).
@@ -129,14 +130,16 @@ indexedMap f xs =
     foldl (::) [] [1,2,3] == [3,2,1]
 -}
 foldl : (a -> b -> b) -> b -> List a -> b
-foldl = Native.List.foldl
+foldl f b xs =
+  Generator.fromList xs |> Generator.foldl f b
 
 {-| Reduce a list from the right.
 
     foldr (+) 0 [1,2,3] == 6
 -}
 foldr : (a -> b -> b) -> b -> List a -> b
-foldr = Native.List.foldr
+foldr f b xs =
+  Generator.fromList xs |> Generator.foldr f b
 
 {-| Reduce a list from the left, building up all of the intermediate results into a list.
 
@@ -172,13 +175,8 @@ the successes.
     filterMap String.toInt ["3", "4.0", "5", "hats"] == [3,5]
 -}
 filterMap : (a -> Maybe b) -> List a -> List b
-filterMap f xs = foldr (maybeCons f) [] xs
-
-maybeCons : (a -> Maybe b) -> a -> List b -> List b
-maybeCons f mx xs =
-    case f mx of
-      Just x -> x :: xs
-      Nothing -> xs
+filterMap f xs =
+  Generator.fromList xs |> Generator.filterMap f |> Generator.toList
 
 {-| Determine the length of a list.
 
@@ -213,7 +211,8 @@ all pred xs =
     any isEven [] == False
 -}
 any : (a -> Bool) -> List a -> Bool
-any = Native.List.any
+any pred xs =
+  Generator.fromList xs |> Generator.any pred
 
 
 {-| Put two lists together.
@@ -360,21 +359,29 @@ intersperse sep xs =
     take 2 [1,2,3,4] == [1,2]
 -}
 take : Int -> List a -> List a
-take = Native.List.take
+take n xs =
+  Generator.fromList xs |> Generator.take n
 
 {-| Drop the first *n* members of a list.
 
     drop 2 [1,2,3,4] == [3,4]
 -}
 drop : Int -> List a -> List a
-drop = Native.List.drop
+drop n xs =
+  let drop1 _ xs' =
+        case xs' of
+          _ :: rest -> rest
+          _ -> xs'
+  in
+      Generator.nil |> Generator.limit n |> Generator.foldl drop1 xs
 
 {-| Create a list with *n* copies of a value:
 
     repeat 3 (0,0) == [(0,0),(0,0),(0,0)]
 -}
 repeat : Int -> a -> List a
-repeat = Native.List.repeat
+repeat n x =
+  Generator.repeat x |> Generator.take n
 
 {-| Sort values from lowest to highest
 

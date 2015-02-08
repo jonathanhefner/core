@@ -42,37 +42,6 @@ Elm.Native.List.make = function(localRuntime) {
         return lst
     }
 
-    // f defined similarly for both foldl and foldr (NB: different from Haskell)
-    // ie, foldl : (a -> b -> b) -> b -> [a] -> b
-    function foldl(f, b, xs) {
-        var acc = b;
-        while (xs.ctor !== '[]') {
-            acc = A2(f, xs._0, acc);
-            xs = xs._1;
-        }
-        return acc;
-    }
-
-    function foldr(f, b, xs) {
-        var arr = toArray(xs);
-        var acc = b;
-        for (var i = arr.length; i--; ) {
-            acc = A2(f, arr[i], acc);
-        }
-        return acc;
-    }
-    
-    function any(pred, xs) {
-        while (xs.ctor !== '[]') {
-            if (pred(xs._0))
-            {
-                return true;
-            }
-            xs = xs._1;
-        }
-        return false;
-    }
-
     function map2(f, xs, ys) {
         var arr = [];
         while (xs.ctor !== '[]' && ys.ctor !== '[]') {
@@ -141,38 +110,6 @@ Elm.Native.List.make = function(localRuntime) {
         }));
     }
 
-    function take(n, xs) {
-        var arr = [];
-        while (xs.ctor !== '[]' && n > 0) {
-            arr.push(xs._0);
-            xs = xs._1;
-            --n;
-        }
-        return fromArray(arr);
-    }
-
-    function drop(n, xs) {
-        while (xs.ctor !== '[]' && n > 0) {
-            xs = xs._1;
-            --n;
-        }
-        return xs;
-    }
-
-    function repeat(n, x) {
-        var arr = [];
-        var pattern = [x];
-        while (n > 0) {
-            if (n & 1)
-            {
-                arr = arr.concat(pattern);
-            }
-            n >>= 1, pattern = pattern.concat(pattern);
-        }
-        return fromArray(arr);
-    }
-
-
     Elm.Native.List.values = {
         Nil:Nil,
         Cons:Cons,
@@ -181,19 +118,12 @@ Elm.Native.List.make = function(localRuntime) {
         fromArray:fromArray,
         range:range,
 
-        foldl:F3(foldl),
-        foldr:F3(foldr),
-
-        any:F2(any),
         map2:F3(map2),
         map3:F4(map3),
         map4:F5(map4),
         map5:F6(map5),
         sortBy:F2(sortBy),
         sortWith:F2(sortWith),
-        take:F2(take),
-        drop:F2(drop),
-        repeat:F2(repeat)
     };
     return localRuntime.Native.List.values = Elm.Native.List.values;
 
