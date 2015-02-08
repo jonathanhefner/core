@@ -1,13 +1,12 @@
 module Generator
-    ( generator, take, foldl, foldr
-    , map, filterMap, any
-    , toList, fromList, repeat
+    ( generator, toList, foldl, foldr
+    , limit, take, map, filterMap, any
+    , fromList, repeat, nil, empty
     ) where
 
 import Basics (..)
 import Maybe
 import Maybe (Maybe(Just, Nothing))
-import List
 import Native.Generator
 
 
@@ -19,6 +18,7 @@ type alias RawGenerator a state =
   { next : state -> Maybe state
   , peek : state -> Maybe a
   , init : Maybe state
+  , limit : Int
   }
 
 type Opaque = Opaque
@@ -28,7 +28,7 @@ type alias Generator a = RawGenerator a Opaque
 
 rawGenerator : (state -> Maybe state) -> (state -> Maybe a) -> state -> RawGenerator a state
 rawGenerator next peek init =
-  RawGenerator next peek (Just init)
+  RawGenerator next peek (Just init) intMax
 
 elide : RawGenerator a state -> Generator a
 elide = Native.Generator.elide
@@ -37,14 +37,24 @@ generator : (state -> Maybe state) -> (state -> Maybe a) -> state -> Generator a
 generator next peek init =
   rawGenerator next peek init |> elide
 
-take : Int -> Generator a -> List a
-take = Native.Generator.take
+toList : Generator a -> List a
+toList = Native.Generator.toList
 
 foldl : (a -> b -> b) -> b -> Generator a -> b
 foldl = Native.Generator.foldl
 
 foldr : (a -> b -> b) -> b -> Generator a -> b
 foldr = Native.Generator.foldr
+
+
+limit : Int -> Generator a -> Generator a
+limit n gen =
+  { gen | limit <- n }
+
+
+take : Int -> Generator a -> List a
+take n gen =
+  gen |> limit n |> toList
 
 
 map : (a -> b) -> Generator a -> Generator b
@@ -69,23 +79,20 @@ any pred gen =
           then Just True
           else Nothing
   in
-      filterMap pred' gen |> take 1 |> List.isEmpty |> not
-
-
-toList : Generator a -> List a
-toList gen =
-  take intMax gen
+      case (filterMap pred' gen |> take 1) of
+        [] -> False
+        _ -> True
 
 
 fromList : List a -> Generator a
 fromList xs =
   let next st =
         case st of
-          _::tl -> Just tl
+          _ :: tl -> Just tl
           _ -> Nothing
       peek st =
         case st of
-          hd::_ -> Just hd
+          hd :: _ -> Just hd
           _ -> Nothing
   in
       generator next peek xs
@@ -94,3 +101,11 @@ fromList xs =
 repeat : a -> Generator a
 repeat x =
   generator (Just) (Just) x
+
+
+nil : Generator ()
+nil = repeat ()
+
+
+empty : Generator ()
+empty = nil |> limit 0

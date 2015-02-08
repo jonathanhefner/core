@@ -20,23 +20,23 @@ Elm.Native.Generator.make = function(localRuntime) {
         return gen;
     }
 
-    function take(n, gen) {
+    function toList(gen) {
         var next = gen.next;
         var peek = gen.peek;
         var st = gen.init;
+        var limit = Math.max(gen.limit, 0);
         var x;
-        var count = 0;
         var root = { _1: Nil };
         var curr = root;
 
-        while (count < n && st.ctor !== 'Nothing') {
+        while (limit && st.ctor !== 'Nothing') {
             x = peek(st._0);
 
             // if value exists, add to list (via mutation! muahaha!)
             if (x.ctor !== 'Nothing') {
                 curr._1 = Cons(x._0, Nil);
                 curr = curr._1;
-                count++;
+                limit--;
             }
 
             st = next(st._0);
@@ -49,13 +49,15 @@ Elm.Native.Generator.make = function(localRuntime) {
         var next = gen.next;
         var peek = gen.peek;
         var st = gen.init;
+        var limit = Math.max(gen.limit, 0);
         var x;
         var acc = b;
 
-        while (st.ctor !== 'Nothing') {
+        while (limit && st.ctor !== 'Nothing') {
             x = peek(st._0);
             if (x.ctor !== 'Nothing') {
                 acc = A2(f, x._0, acc);
+                limit--;
             }
             st = next(st._0);
         }
@@ -64,19 +66,21 @@ Elm.Native.Generator.make = function(localRuntime) {
     }
 
     function foldr(f, b, gen) {
-        if (gen.init.ctor === 'Nothing') { return b; }
+        if (gen.limit <= 0 || gen.init.ctor === 'Nothing') { return b; }
 
         var next = gen.next;
         var peek = gen.peek;
         var st = gen.init;
+        var limit = Math.max(gen.limit, 0);
         var x;
 
         // build array so we can iterate from the right
         var ary = [];
-        while (st.ctor !== 'Nothing') {
+        while (limit && st.ctor !== 'Nothing') {
             x = peek(st._0);
             if (x.ctor !== 'Nothing') {
                 ary.push(x._0);
+                limit--;
             }
             st = next(st._0);
         }
@@ -92,7 +96,7 @@ Elm.Native.Generator.make = function(localRuntime) {
 
     Elm.Native.Generator.values = {
         elide: elide,
-        take: F2(take),
+        toList: toList,
         foldl: F3(foldl),
         foldr: F3(foldr),
     };
