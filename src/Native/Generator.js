@@ -23,14 +23,15 @@ Elm.Native.Generator.make = function(localRuntime) {
     function toList(gen) {
         var next = gen.next;
         var peek = gen.peek;
-        var st = gen.init;
+        var st = gen.start;
+        var until = gen.until;
         var limit = Math.max(gen.limit, 0);
         var x;
         var root = { _1: Nil };
         var curr = root;
 
-        while (limit && st.ctor !== 'Nothing') {
-            x = peek(st._0);
+        while (limit && st !== until) {
+            x = peek(st);
 
             // if value exists, add to list (via mutation! muahaha!)
             if (x.ctor !== 'Nothing') {
@@ -39,7 +40,7 @@ Elm.Native.Generator.make = function(localRuntime) {
                 limit--;
             }
 
-            st = next(st._0);
+            st = next(st);
         }
 
         return root._1;
@@ -48,41 +49,43 @@ Elm.Native.Generator.make = function(localRuntime) {
     function foldl(f, b, gen) {
         var next = gen.next;
         var peek = gen.peek;
-        var st = gen.init;
+        var st = gen.start;
+        var until = gen.until;
         var limit = Math.max(gen.limit, 0);
         var x;
         var acc = b;
 
-        while (limit && st.ctor !== 'Nothing') {
-            x = peek(st._0);
+        while (limit && st !== until) {
+            x = peek(st);
             if (x.ctor !== 'Nothing') {
                 acc = A2(f, x._0, acc);
                 limit--;
             }
-            st = next(st._0);
+            st = next(st);
         }
 
         return acc;
     }
 
     function foldr(f, b, gen) {
-        if (gen.limit <= 0 || gen.init.ctor === 'Nothing') { return b; }
+        if (gen.limit <= 0 || gen.start === gen.until) { return b; }
 
         var next = gen.next;
         var peek = gen.peek;
-        var st = gen.init;
+        var st = gen.start;
+        var until = gen.until;
         var limit = Math.max(gen.limit, 0);
         var x;
 
         // build array so we can iterate from the right
         var ary = [];
-        while (limit && st.ctor !== 'Nothing') {
-            x = peek(st._0);
+        while (limit && st !== until) {
+            x = peek(st);
             if (x.ctor !== 'Nothing') {
                 ary.push(x._0);
                 limit--;
             }
-            st = next(st._0);
+            st = next(st);
         }
 
         // fold from the right

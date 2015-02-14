@@ -15,10 +15,11 @@ intMax = 2147483647 -- (2^31 - 1)
 
 
 type alias RawGenerator a state =
-  { next : state -> Maybe state
+  { next : state -> state
   , peek : state -> Maybe a
-  , init : Maybe state
   , limit : Int
+  , until : state -- ONLY "===" comparable!
+  , start : state
   }
 
 type Opaque = Opaque
@@ -26,16 +27,39 @@ type Opaque = Opaque
 type alias Generator a = RawGenerator a Opaque
 
 
-rawGenerator : (state -> Maybe state) -> (state -> Maybe a) -> state -> RawGenerator a state
-rawGenerator next peek init =
-  RawGenerator next peek (Just init) intMax
+rawGenerator : (state -> state) -> (state -> Maybe a) -> state -> state -> RawGenerator a state
+rawGenerator next peek until start =
+  RawGenerator next peek intMax until start
 
 elide : RawGenerator a state -> Generator a
 elide = Native.Generator.elide
 
+
+fromList : List a -> Generator a
+fromList xs =
+  let next st =
+        case st of
+          _ :: tl -> tl
+          _ -> st -- impossible
+      peek st =
+        case st of
+          hd :: _ -> Just hd
+          _ -> Nothing -- impossible
+  in
+      rawGenerator next peek [] xs |> elide
+
+
 generator : (state -> Maybe state) -> (state -> Maybe a) -> state -> Generator a
-generator next peek init =
-  rawGenerator next peek init |> elide
+generator next peek start =
+  let maybeFlatMap f maybe =
+        case maybe of
+          Just x -> f x
+          Nothing -> Nothing
+      next' = maybeFlatMap next
+      peek' = maybeFlatMap peek
+  in
+      rawGenerator next' peek' Nothing (Just start) |> elide
+
 
 toList : Generator a -> List a
 toList = Native.Generator.toList
@@ -82,20 +106,6 @@ any pred gen =
       case (filterMap pred' gen |> take 1) of
         [] -> False
         _ -> True
-
-
-fromList : List a -> Generator a
-fromList xs =
-  let next st =
-        case st of
-          _ :: tl -> Just tl
-          _ -> Nothing
-      peek st =
-        case st of
-          hd :: _ -> Just hd
-          _ -> Nothing
-  in
-      generator next peek xs
 
 
 repeat : a -> Generator a
