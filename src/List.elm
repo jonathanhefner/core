@@ -373,7 +373,7 @@ drop n xs =
           _ :: rest -> rest
           _ -> xs'
   in
-      Generator.nil |> Generator.limit n |> Generator.foldl drop1 xs
+      Generator.range 0 n |> Generator.foldl drop1 xs
 
 {-| Create a list with *n* copies of a value:
 
