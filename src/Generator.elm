@@ -1,7 +1,7 @@
 module Generator
     ( generator, toList, foldl, foldr
     , limit, take, map, filterMap, any
-    , fromList, repeat, nil, empty
+    , fromList, range, repeat, nil, empty
     ) where
 
 import Basics (..)
@@ -47,6 +47,13 @@ fromList xs =
           _ -> Nothing -- impossible
   in
       rawGenerator next peek [] xs |> elide
+
+
+range : Int -> Int -> Generator Int
+range a b =
+  let step = if a < b then 1 else -1
+  in
+    rawGenerator ((+) step) (Just) b a |> elide
 
 
 generator : (state -> Maybe state) -> (state -> Maybe a) -> state -> Generator a

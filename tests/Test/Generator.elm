@@ -58,6 +58,8 @@ testGeneratorOfN n =
             , test "limit 1" <| assertEqual (one) (limit 1 genX |> foldr (::) [])
             ]
 
+        , test "range" <| assertEqual (xs) (range 1 (n + 1) |> toList)
+
         , test "take" <| assertEqual (xs) (take n genX)
 
         , test "map" <| assertEqual (xs) (map (\x -> x + 1) genZ |> take n)
